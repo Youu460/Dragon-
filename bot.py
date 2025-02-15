@@ -1,5 +1,6 @@
 import logging
 import logging.config
+from os import environ
 
 # Get logging configurations
 logging.config.fileConfig('logging.conf')
@@ -13,6 +14,7 @@ from database.ia_filterdb import Media
 from database.users_chats_db import db
 from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR
 from utils import temp
+PORT = environ.get("PORT", "8090")
 
 class Bot(Client):
 
@@ -40,6 +42,12 @@ class Bot(Client):
         self.username = '@' + me.username
         logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
         logging.info(LOG_STR)
+
+        app = web.AppRunner(await web_server())
+        await app.setup()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, PORT).start() 
+        await restart_index(self)
 
     async def stop(self, *args):
         await super().stop()
